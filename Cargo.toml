@@ -18,3 +18,4 @@ actix-web = {version="4.0"}
 spider = {version = "1.26"}
 env_logger = {version = "0.10"}
 log = {version = "0.4"}
+walkdir = "2.3.3"

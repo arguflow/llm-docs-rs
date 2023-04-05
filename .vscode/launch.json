@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run unit tests llm-docs-rs",
+      "type": "lldb",
+      "request": "launch",
+      "cargo": {
+        "args": [
+          "test",
+        "--no-run",
+        "--lib",
+        "--package=llm_docs_rs",
+        ],
+        "filter": {
+          "name": "llm_docs_rs",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+    },
+  ],
+}
