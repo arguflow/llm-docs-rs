@@ -15,6 +15,6 @@ path = "src/lib.rs"
 
 [dependencies]
 actix-web = {version="4.0"}
-spider = {version = "1.26"}
+spider = {version = "1.26", features = ["ua_generator", "regex"]}
 env_logger = {version = "0.10"}
 log = {version = "0.4"}

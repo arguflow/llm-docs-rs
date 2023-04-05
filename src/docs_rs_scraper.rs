@@ -1,4 +1,5 @@
 //! `cargo run --example download`
+use spider::configuration;
 use spider::utils::log;
 use spider::website::Website;
 
@@ -10,14 +11,21 @@ pub async fn scrape_site(website_name: &str) -> Result<(), Box<dyn Error>> {
     // view the target dist for the downloads
     std::fs::create_dir_all("./target/downloads").unwrap_or_default();
 
-    let mut website: Website = Website::new("https://docs.rs/robokit/0.2.0/robokit/index.html");
-    website.configuration.http2_prior_knowledge = true;
-    website.configuration.delay = 0;
+    let mut configuration = configuration::Configuration::new();
+    configuration.blacklist_url = Some(Box::new(vec!["/crate/".into()]));
+    configuration.http2_prior_knowledge = true;
+    configuration.delay = 0;
+    configuration.respect_robots_txt = false;
+
+    let mut website: Website = Website::new("https://docs.rs/robokit/0.2.0/robokit");
+    website.configuration = Box::new(configuration);
 
     website.scrape().await;
 
     log::info!("Scraped website: {}", website_name);
-    log::info!("Website has {} pages", website.get_pages().unwrap().len());
+    for link in website.get_links().iter() {
+        log::info!("Link: {}", link.as_ref());
+    }
 
     for page in website.get_pages().expect("Website to have pages").iter() {
         log::info!("Downloading: {}", page.get_url());

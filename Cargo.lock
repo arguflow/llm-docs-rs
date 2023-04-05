@@ -1743,6 +1743,7 @@ dependencies = [
  "matches",
  "num_cpus",
  "percent-encoding",
+ "regex",
  "reqwest",
  "selectors",
  "smallvec",
