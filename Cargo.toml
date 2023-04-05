@@ -1,0 +1,20 @@
+[package]
+name = "llm_docs_rs"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "llm_docs_rs"
+path = "src/main.rs"
+
+[lib]
+name = "llm_docs_rs"
+path = "src/lib.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = {version="4.0"}
+spider = {version = "1.26"}
+env_logger = {version = "0.10"}
+log = {version = "0.4"}
