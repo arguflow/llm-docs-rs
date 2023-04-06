@@ -1,4 +1,4 @@
-pub mod docs_rs_scraper;
+pub mod docs_rs_builder;
 pub mod services;
 
 use actix_web::{middleware::Logger, App, HttpServer};

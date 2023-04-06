@@ -1,5 +1,6 @@
-use crate::docs_rs_scraper::scrape_site;
-use actix_web::{get, HttpRequest, HttpResponse};
+use crate::docs_rs_builder::build_docs;
+use actix_web::{get, rt::spawn, HttpRequest, HttpResponse};
+use log::{error, info};
 
 #[get("/{tail:.*}")]
 pub async fn scrape(req: HttpRequest) -> HttpResponse {
@@ -8,8 +9,17 @@ pub async fn scrape(req: HttpRequest) -> HttpResponse {
         return HttpResponse::NotFound().finish();
     }
 
-    let docs_rs_url = format!("https://docs.rs/{}", tail);
-    scrape_site(&docs_rs_url).await.unwrap();
+    let crate_name = tail.split('/').next().unwrap_or("").to_owned();
+    if crate_name.is_empty() {
+        return HttpResponse::NotFound().finish();
+    }
+    spawn(async move {
+        let result = build_docs(&crate_name).await;
+        match result {
+            Ok(_) => info!("Successfully built docs for {}", crate_name),
+            Err(e) => error!("Failed to build docs for {}: {}", crate_name, e),
+        }
+    });
 
     HttpResponse::NoContent().finish()
 }
