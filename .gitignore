@@ -1,3 +1,5 @@
 /target
 embedding-docs
 embedding-crates
+/python/.env
+embedding-indices

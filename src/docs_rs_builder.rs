@@ -1,11 +1,11 @@
 use std::{
     error::Error,
-    fs,
+    fs::{self},
     path::{Path, PathBuf},
     process::Command,
 };
 
-use walkdir::WalkDir;
+use walkdir::{DirEntry, WalkDir};
 
 pub async fn build_docs(crate_name: &str) -> Result<(), Box<dyn Error>> {
     fs::create_dir_all("./embedding-docs")?;
@@ -98,7 +98,39 @@ pub async fn build_docs(crate_name: &str) -> Result<(), Box<dyn Error>> {
         }
     }
 
+    loop {
+        let entries = WalkDir::new(&docs_root_dir)
+            .min_depth(1)
+            .max_depth(usize::MAX)
+            .into_iter()
+            .filter_map(|e| e.ok());
+
+        let mut directories_to_remove = vec![];
+        for entry in entries {
+            if entry.path().is_dir() && is_empty_dir(&entry) {
+                directories_to_remove.push(entry.path().to_owned());
+            }
+        }
+
+        directories_to_remove.sort_by(|a, b| b.cmp(a)); // Sort in reverse order
+
+        if directories_to_remove.is_empty() {
+            break;
+        }
+
+        for dir in directories_to_remove {
+            fs::remove_dir(dir).expect("Failed to remove directory");
+        }
+    }
+
     Ok(())
+}
+
+fn is_empty_dir(entry: &DirEntry) -> bool {
+    entry
+        .path()
+        .read_dir()
+        .map_or(false, |mut it| it.next().is_none())
 }
 
 #[cfg(test)]
@@ -108,18 +140,26 @@ mod tests {
     #[actix_web::test]
     async fn test_build_docs() {
         assert!(build_docs("ratchet_core").await.is_ok());
+
         assert_eq!(Path::new("./embedding-docs/ratchet_core").is_dir(), true);
+
         assert_eq!(
             Path::new("./embedding-crates/ratchet_core-docs").is_dir(),
             false
         );
+
         let html_files_only = WalkDir::new("./embedding-docs/ratchet_core")
             .into_iter()
             .filter_map(|entry| entry.ok())
             .all(|entry| {
                 entry.path().is_dir() || entry.path().extension().map_or(false, |ext| ext == "html")
             });
-
         assert_eq!(html_files_only, true);
+
+        let empty_dirs_exist = WalkDir::new("./embedding-docs/ratchet_core")
+            .into_iter()
+            .filter_map(|entry| entry.ok())
+            .any(|entry| entry.path().is_dir() && is_empty_dir(&entry));
+        assert_eq!(empty_dirs_exist, false);
     }
 }
